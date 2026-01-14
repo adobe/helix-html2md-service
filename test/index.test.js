@@ -253,10 +253,10 @@ describe('Index Tests', () => {
   });
 
   for (const status of [
-    { origin: 400, expected: 400 },
-    { origin: 401, expected: 401 },
-    { origin: 403, expected: 404 },
-    { origin: 404, expected: 404 },
+    { origin: 400, expected: 400, message: 'error fetching resource at https://www.example.com/' },
+    { origin: 401, expected: 401, message: 'not authenticated to access resource: https://www.example.com/' },
+    { origin: 403, expected: 404, message: 'not authorized to access resource: https://www.example.com/' },
+    { origin: 404, expected: 404, message: 'resource not found: https://www.example.com/' },
   ]) {
     // eslint-disable-next-line no-loop-func
     it(`returns ${status.origin} for a ${status.expected} response`, async () => {
@@ -268,10 +268,7 @@ describe('Index Tests', () => {
       assert.deepStrictEqual(result.headers.plain(), {
         'cache-control': 'no-store, private, must-revalidate',
         'content-type': 'text/plain; charset=utf-8',
-        'x-error':
-          status.expected === 400
-            ? 'error fetching resource at https://www.example.com/'
-            : 'resource not found: https://www.example.com/',
+        'x-error': status.message,
       });
     });
   }
