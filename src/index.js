@@ -144,10 +144,12 @@ async function run(request, ctx) {
       if (status >= 400 && status < 500) {
         switch (status) {
           case 401:
-            return error(ctx, `resource not found: ${sourceUrl}`, status);
+            return error(ctx, `not authenticated to access resource: ${sourceUrl}`, status);
           case 403:
+            // return a 404 so that for a html2md overlay we fallback to the primary content source
+            return error(ctx, `not authorized to access resource: ${sourceUrl}`, 404);
           case 404:
-            return error(ctx, `resource not found: ${sourceUrl}`, 404);
+            return error(ctx, `resource not found: ${sourceUrl}`, status);
           default:
             return error(ctx, `error fetching resource at ${sourceUrl}`, status);
         }
@@ -219,6 +221,7 @@ async function run(request, ctx) {
       unspreadLists: !!ctx.data.features?.unspreadLists,
       externalImageUrlPrefixes: ctx.data.features?.externalImageUrlPrefixes,
       maxImages: ctx.data.limits?.maxImages,
+      maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
 
     const zipped = await gzip(md);
