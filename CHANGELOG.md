@@ -1,3 +1,10 @@
+## [2.20.2](https://github.com/adobe/[secure]-html2md-service/compare/v2.20.1...v2.20.2) (2026-01-15)
+
+
+### Bug Fixes
+
+* use more meaningful error message for 403 ([#882](https://github.com/adobe/[secure]-html2md-service/issues/882)) ([0d658b6](https://github.com/adobe/[secure]-html2md-service/commit/0d658b60353b29adcf0040b5fb83047d8fe3c534))
+
 ## [2.20.1](https://github.com/adobe/[secure]-html2md-service/compare/v2.20.0...v2.20.1) (2025-12-16)
 
 
