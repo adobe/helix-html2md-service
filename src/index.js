@@ -224,10 +224,15 @@ async function run(request, ctx) {
       maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
 
-    const zipped = await gzip(md);
+    const responseBody = JSON.stringify({
+      md,
+      media: mediaHandler?.getUploadedImages() || [],
+    });
+
+    const zipped = await gzip(responseBody);
     const headers = {
-      'content-type': 'text/markdown; charset=utf-8',
-      'content-length': md.length,
+      'content-type': 'application/json; charset=utf-8',
+      'content-length': Buffer.byteLength(responseBody),
       'cache-control': 'no-store, private, must-revalidate',
       'x-source-location': cleanupHeaderValue(sourceUrl),
       'content-encoding': 'gzip',

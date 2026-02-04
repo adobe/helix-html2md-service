@@ -92,5 +92,6 @@ export function Nock() {
 
 export async function uncompress(response) {
   const uncompressed = await gunzipAsync(await response.arrayBuffer());
-  return uncompressed.toString().trim();
+  const json = JSON.parse(uncompressed.toString());
+  return json.md.trim();
 }

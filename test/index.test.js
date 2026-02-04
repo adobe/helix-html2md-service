@@ -136,8 +136,8 @@ describe('Index Tests', () => {
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '837',
-          'content-type': 'text/markdown; charset=utf-8',
+          'content-length': '1184',
+          'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
         });
@@ -205,8 +205,8 @@ describe('Index Tests', () => {
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '837',
-          'content-type': 'text/markdown; charset=utf-8',
+          'content-length': '1184',
+          'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
         });
@@ -245,8 +245,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '157',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '184',
+      'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
     });
@@ -315,8 +315,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '406',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '450',
+      'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
     });
@@ -428,13 +428,13 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '2870',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '3184',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
 
-  it('return 409 for large image', async () => {
+  it('returns 200 with error reference for large image', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'image-large.html'), {})
@@ -464,15 +464,20 @@ describe('Index Tests', () => {
         env: DUMMY_ENV,
       },
     );
-    assert.strictEqual(result.status, 409);
+    // Large images are handled gracefully - conversion succeeds, images use about:error
+    assert.strictEqual(result.status, 200);
+    const uncompressed = await uncompress(result);
+    assert.ok(uncompressed.includes('about:error'), 'large image should be replaced with about:error');
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
-      'content-type': 'text/plain; charset=utf-8',
-      'x-error': 'error fetching resource at https://www.example.com/: Image 1 exceeds allowed limit of 20.00MB',
+      'content-encoding': 'gzip',
+      'content-length': '284',
+      'content-type': 'application/json; charset=utf-8',
+      'x-source-location': 'https://www.example.com/',
     });
   });
 
-  it('return 409 for several large images', async () => {
+  it('returns 200 with error references for several large images', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'images-large.html'), {})
@@ -507,11 +512,16 @@ describe('Index Tests', () => {
         env: DUMMY_ENV,
       },
     );
-    assert.strictEqual(result.status, 409);
+    // Large images are handled gracefully - conversion succeeds, images use about:error
+    assert.strictEqual(result.status, 200);
+    const uncompressed = await uncompress(result);
+    assert.ok(uncompressed.includes('about:error'), 'large images should be replaced with about:error');
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
-      'content-type': 'text/plain; charset=utf-8',
-      'x-error': 'error fetching resource at https://www.example.com/: Images 1 and 2 exceed allowed limit of 20.00MB',
+      'content-encoding': 'gzip',
+      'content-length': '325',
+      'content-type': 'application/json; charset=utf-8',
+      'x-source-location': 'https://www.example.com/',
     });
   });
 
@@ -570,8 +580,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '345',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '657',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
@@ -624,8 +634,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '0',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '20',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
