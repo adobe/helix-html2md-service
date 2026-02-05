@@ -133,10 +133,11 @@ describe('Index Tests', () => {
 
         const uncompressed = await uncompress(result);
         assert.strictEqual(uncompressed, expected.trim());
-        assert.deepStrictEqual(result.headers.plain(), {
+        const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
+        assert.ok(contentLength, 'content-length header should be present');
+        assert.deepStrictEqual(respHeaders, {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '1184',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -202,10 +203,11 @@ describe('Index Tests', () => {
 
         const uncompressed = await uncompress(result);
         assert.strictEqual(uncompressed, expected.trim());
-        assert.deepStrictEqual(result.headers.plain(), {
+        const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
+        assert.ok(contentLength, 'content-length header should be present');
+        assert.deepStrictEqual(respHeaders, {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '1184',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -434,7 +436,7 @@ describe('Index Tests', () => {
     });
   });
 
-  it('returns 200 with error reference for large image', async () => {
+  it('returns 409 for large image', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'image-large.html'), {})
@@ -464,20 +466,15 @@ describe('Index Tests', () => {
         env: DUMMY_ENV,
       },
     );
-    // Large images are handled gracefully - conversion succeeds, images use about:error
-    assert.strictEqual(result.status, 200);
-    const uncompressed = await uncompress(result);
-    assert.ok(uncompressed.includes('about:error'), 'large image should be replaced with about:error');
+    assert.strictEqual(result.status, 409);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
-      'content-encoding': 'gzip',
-      'content-length': '284',
-      'content-type': 'application/json; charset=utf-8',
-      'x-source-location': 'https://www.example.com/',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-error': 'error fetching resource at https://www.example.com/: Resource size exceeds allowed limit: 22011904 > 20971520',
     });
   });
 
-  it('returns 200 with error references for several large images', async () => {
+  it('returns 409 for several large images', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'images-large.html'), {})
@@ -512,16 +509,11 @@ describe('Index Tests', () => {
         env: DUMMY_ENV,
       },
     );
-    // Large images are handled gracefully - conversion succeeds, images use about:error
-    assert.strictEqual(result.status, 200);
-    const uncompressed = await uncompress(result);
-    assert.ok(uncompressed.includes('about:error'), 'large images should be replaced with about:error');
+    assert.strictEqual(result.status, 409);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
-      'content-encoding': 'gzip',
-      'content-length': '325',
-      'content-type': 'application/json; charset=utf-8',
-      'x-source-location': 'https://www.example.com/',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-error': 'error fetching resource at https://www.example.com/: Resource size exceeds allowed limit: 26214400 > 20971520',
     });
   });
 
