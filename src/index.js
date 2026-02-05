@@ -225,7 +225,7 @@ async function run(request, ctx) {
     });
 
     const responseBody = JSON.stringify({
-      md,
+      markdown: md,
       media: mediaHandler?.getUploadedImages() || [],
     });
 

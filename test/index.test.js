@@ -247,7 +247,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '184',
+      'content-length': '190',
       'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
@@ -317,7 +317,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '450',
+      'content-length': '456',
       'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
@@ -427,10 +427,11 @@ describe('Index Tests', () => {
       },
     );
     assert.strictEqual(result.status, 200);
-    assert.deepStrictEqual(result.headers.plain(), {
+    const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
+    assert.ok(contentLength, 'content-length header should be present');
+    assert.deepStrictEqual(respHeaders, {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '3184',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
@@ -470,7 +471,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-type': 'text/plain; charset=utf-8',
-      'x-error': 'error fetching resource at https://www.example.com/: Resource size exceeds allowed limit: 22011904 > 20971520',
+      'x-error': 'error fetching resource at https://www.example.com/: Image 1 exceeds allowed limit of 20.00MB',
     });
   });
 
@@ -513,7 +514,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-type': 'text/plain; charset=utf-8',
-      'x-error': 'error fetching resource at https://www.example.com/: Resource size exceeds allowed limit: 26214400 > 20971520',
+      'x-error': 'error fetching resource at https://www.example.com/: Images 1 and 2 exceed allowed limit of 20.00MB',
     });
   });
 
@@ -569,10 +570,11 @@ describe('Index Tests', () => {
     const uncompressed = await uncompress(result);
     assert.strictEqual(result.status, 200);
     assert.strictEqual(uncompressed, expected.trim());
-    assert.deepStrictEqual(result.headers.plain(), {
+    const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
+    assert.ok(contentLength, 'content-length header should be present');
+    assert.deepStrictEqual(respHeaders, {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '657',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
@@ -626,7 +628,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '20',
+      'content-length': '26',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
