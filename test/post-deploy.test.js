@@ -72,7 +72,10 @@ createTargets({ _version: 'ci' }).forEach((target) => {
         headers: target.headers,
       });
       assert.strictEqual(res.status, 200);
-      assert.strictEqual((await res.text()).trim(), TEST_MD.trim());
+      const responseText = await res.text();
+      const json = JSON.parse(responseText);
+      assert.strictEqual(json.markdown.trim(), TEST_MD.trim());
+      assert.ok(Array.isArray(json.media), 'media should be an array');
     }).timeout(50000);
   });
 });
