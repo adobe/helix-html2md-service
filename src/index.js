@@ -226,7 +226,7 @@ async function run(request, ctx) {
 
     const responseBody = JSON.stringify({
       markdown: md,
-      media: mediaHandler?.getUploadedImages() || [],
+      media: mediaHandler.getUploadedImages(),
     });
 
     const zipped = await gzip(responseBody);
@@ -261,7 +261,7 @@ async function run(request, ctx) {
     log.debug(e.stack);
     return error(ctx, `error fetching resource at ${sourceUrl}: ${e.message}`, 500);
   } finally {
-    await mediaHandler?.fetchContext.reset();
+    await mediaHandler.fetchContext.reset();
   }
 }
 
