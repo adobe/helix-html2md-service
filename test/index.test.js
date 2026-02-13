@@ -131,8 +131,13 @@ describe('Index Tests', () => {
         const result = await main(reqUrl('/blog/article', { headers }), { log: console, env: DUMMY_ENV });
         assert.strictEqual(result.status, 200);
 
-        const uncompressed = await uncompress(result);
-        assert.strictEqual(uncompressed, expected.trim());
+        const body = await uncompress(result);
+        assert.strictEqual(body.markdown.trim(), expected.trim());
+        assert.ok(Array.isArray(body.media), 'media should be an array');
+        assert.strictEqual(body.media.length, 1);
+        assert.strictEqual(body.media[0].hash, '1c2e2c6c049ccf4b583431e14919687f3a39cc227');
+        assert.strictEqual(body.media[0].contentType, 'image/png');
+        assert.strictEqual(body.media[0].uploaded, true);
         const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
         assert.ok(contentLength, 'content-length header should be present');
         assert.deepStrictEqual(respHeaders, {
@@ -201,8 +206,13 @@ describe('Index Tests', () => {
         const result = await main(reqUrl('/blog/article', { headers }), { log: console, env: DUMMY_ENV });
         assert.strictEqual(result.status, 200);
 
-        const uncompressed = await uncompress(result);
-        assert.strictEqual(uncompressed, expected.trim());
+        const body = await uncompress(result);
+        assert.strictEqual(body.markdown.trim(), expected.trim());
+        assert.ok(Array.isArray(body.media), 'media should be an array');
+        assert.strictEqual(body.media.length, 1);
+        assert.strictEqual(body.media[0].hash, '1c2e2c6c049ccf4b583431e14919687f3a39cc227');
+        assert.strictEqual(body.media[0].contentType, 'image/png');
+        assert.strictEqual(body.media[0].uploaded, true);
         const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
         assert.ok(contentLength, 'content-length header should be present');
         assert.deepStrictEqual(respHeaders, {
@@ -242,8 +252,9 @@ describe('Index Tests', () => {
     );
     assert.strictEqual(result.status, 200);
 
-    const uncompressed = await uncompress(result);
-    assert.strictEqual(uncompressed, expected.trim());
+    const body = await uncompress(result);
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
@@ -312,8 +323,9 @@ describe('Index Tests', () => {
     );
     assert.strictEqual(result.status, 200);
 
-    const uncompressed = await uncompress(result);
-    assert.strictEqual(uncompressed, expected.trim());
+    const body = await uncompress(result);
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
@@ -567,9 +579,10 @@ describe('Index Tests', () => {
       },
     );
     const expected = await readFile(resolve(__testdir, 'fixtures', 'image-large.md'), 'utf-8');
-    const uncompressed = await uncompress(result);
+    const body = await uncompress(result);
     assert.strictEqual(result.status, 200);
-    assert.strictEqual(uncompressed, expected.trim());
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
     assert.ok(contentLength, 'content-length header should be present');
     assert.deepStrictEqual(respHeaders, {
