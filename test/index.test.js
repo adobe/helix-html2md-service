@@ -133,16 +133,20 @@ describe('Index Tests', () => {
 
         const body = await uncompress(result);
         assert.strictEqual(body.markdown.trim(), expected.trim());
-        assert.ok(Array.isArray(body.media), 'media should be an array');
-        assert.strictEqual(body.media.length, 1);
-        assert.strictEqual(body.media[0].hash, '1c2e2c6c049ccf4b583431e14919687f3a39cc227');
-        assert.strictEqual(body.media[0].contentType, 'image/png');
-        assert.strictEqual(body.media[0].uploaded, true);
-        const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
-        assert.ok(contentLength, 'content-length header should be present');
-        assert.deepStrictEqual(respHeaders, {
+        assert.deepStrictEqual(body.media, [
+          {
+            uri: 'https://main--repo--owner.aem.page/media_1c2e2c6c049ccf4b583431e14919687f3a39cc227.png#width=300&height=300',
+            hash: '1c2e2c6c049ccf4b583431e14919687f3a39cc227',
+            contentType: 'image/png',
+            width: '300',
+            height: '300',
+            uploaded: true,
+          },
+        ]);
+        assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
+          'content-length': '1141',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -208,16 +212,20 @@ describe('Index Tests', () => {
 
         const body = await uncompress(result);
         assert.strictEqual(body.markdown.trim(), expected.trim());
-        assert.ok(Array.isArray(body.media), 'media should be an array');
-        assert.strictEqual(body.media.length, 1);
-        assert.strictEqual(body.media[0].hash, '1c2e2c6c049ccf4b583431e14919687f3a39cc227');
-        assert.strictEqual(body.media[0].contentType, 'image/png');
-        assert.strictEqual(body.media[0].uploaded, true);
-        const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
-        assert.ok(contentLength, 'content-length header should be present');
-        assert.deepStrictEqual(respHeaders, {
+        assert.deepStrictEqual(body.media, [
+          {
+            uri: 'https://main--repo--owner.aem.page/media_1c2e2c6c049ccf4b583431e14919687f3a39cc227.png#width=300&height=300',
+            hash: '1c2e2c6c049ccf4b583431e14919687f3a39cc227',
+            contentType: 'image/png',
+            width: '300',
+            height: '300',
+            uploaded: true,
+          },
+        ]);
+        assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
+          'content-length': '1141',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -439,11 +447,10 @@ describe('Index Tests', () => {
       },
     );
     assert.strictEqual(result.status, 200);
-    const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
-    assert.ok(contentLength, 'content-length header should be present');
-    assert.deepStrictEqual(respHeaders, {
+    assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
+      'content-length': '3138',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
@@ -583,11 +590,10 @@ describe('Index Tests', () => {
     assert.strictEqual(result.status, 200);
     assert.strictEqual(body.markdown.trim(), expected.trim());
     assert.deepStrictEqual(body.media, []);
-    const { 'content-length': contentLength, ...respHeaders } = result.headers.plain();
-    assert.ok(contentLength, 'content-length header should be present');
-    assert.deepStrictEqual(respHeaders, {
+    assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
+      'content-length': '382',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
