@@ -519,14 +519,21 @@ describe('Index Tests', () => {
     nock('https://my-media-bus.s3.us-east-1.amazonaws.com')
       .head('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3')
       .reply(404)
-      .put('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?partNumber=1&x-id=UploadPart')
-      .reply(201)
-      .put('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?partNumber=2&x-id=UploadPart')
-      .reply(201)
-      .put('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?partNumber=3&x-id=UploadPart')
-      .reply(201)
-      .put('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?partNumber=4&x-id=UploadPart')
-      .reply(201)
+      .put(/\/foo-id\/120b6669c77e35fb2ad9563a4a048701b43948bd3\?partNumber=[12345]&x-id=UploadPart/)
+      .times(5)
+      .reply(201, '', {
+        etag: '1234',
+      })
+      .post('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3')
+      .reply(() => {
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<CompleteMultipartUploadResult>
+   <Location>s3://my-media-bus.s3.us-east-1.amazonaws.com/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3</Location>
+   <Bucket>my-media-bus</Bucket>
+   <Key>foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3</Key>
+</CompleteMultipartUploadResult>`;
+        return [200, xml];
+      })
       .post('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?uploads=')
       .reply(201);
 
