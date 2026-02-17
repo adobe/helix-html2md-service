@@ -224,10 +224,15 @@ async function run(request, ctx) {
       maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
 
-    const zipped = await gzip(md);
+    const responseBody = JSON.stringify({
+      markdown: md,
+      media: mediaHandler.getUploadedImages(),
+    });
+
+    const zipped = await gzip(responseBody);
     const headers = {
-      'content-type': 'text/markdown; charset=utf-8',
-      'content-length': md.length,
+      'content-type': 'application/json; charset=utf-8',
+      'content-length': Buffer.byteLength(responseBody),
       'cache-control': 'no-store, private, must-revalidate',
       'x-source-location': cleanupHeaderValue(sourceUrl),
       'content-encoding': 'gzip',
@@ -256,7 +261,7 @@ async function run(request, ctx) {
     log.debug(e.stack);
     return error(ctx, `error fetching resource at ${sourceUrl}: ${e.message}`, 500);
   } finally {
-    await mediaHandler?.fetchContext.reset();
+    await mediaHandler.fetchContext.reset();
   }
 }
 

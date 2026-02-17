@@ -131,13 +131,23 @@ describe('Index Tests', () => {
         const result = await main(reqUrl('/blog/article', { headers }), { log: console, env: DUMMY_ENV });
         assert.strictEqual(result.status, 200);
 
-        const uncompressed = await uncompress(result);
-        assert.strictEqual(uncompressed, expected.trim());
+        const body = await uncompress(result);
+        assert.strictEqual(body.markdown.trim(), expected.trim());
+        assert.deepStrictEqual(body.media, [
+          {
+            uri: 'https://main--repo--owner.aem.page/media_1c2e2c6c049ccf4b583431e14919687f3a39cc227.png#width=300&height=300',
+            hash: '1c2e2c6c049ccf4b583431e14919687f3a39cc227',
+            contentType: 'image/png',
+            width: '300',
+            height: '300',
+            uploaded: true,
+          },
+        ]);
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '837',
-          'content-type': 'text/markdown; charset=utf-8',
+          'content-length': '1141',
+          'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
         });
@@ -200,13 +210,23 @@ describe('Index Tests', () => {
         const result = await main(reqUrl('/blog/article', { headers }), { log: console, env: DUMMY_ENV });
         assert.strictEqual(result.status, 200);
 
-        const uncompressed = await uncompress(result);
-        assert.strictEqual(uncompressed, expected.trim());
+        const body = await uncompress(result);
+        assert.strictEqual(body.markdown.trim(), expected.trim());
+        assert.deepStrictEqual(body.media, [
+          {
+            uri: 'https://main--repo--owner.aem.page/media_1c2e2c6c049ccf4b583431e14919687f3a39cc227.png#width=300&height=300',
+            hash: '1c2e2c6c049ccf4b583431e14919687f3a39cc227',
+            contentType: 'image/png',
+            width: '300',
+            height: '300',
+            uploaded: true,
+          },
+        ]);
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '837',
-          'content-type': 'text/markdown; charset=utf-8',
+          'content-length': '1141',
+          'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
         });
@@ -240,13 +260,14 @@ describe('Index Tests', () => {
     );
     assert.strictEqual(result.status, 200);
 
-    const uncompressed = await uncompress(result);
-    assert.strictEqual(uncompressed, expected.trim());
+    const body = await uncompress(result);
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '157',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '190',
+      'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
     });
@@ -310,13 +331,14 @@ describe('Index Tests', () => {
     );
     assert.strictEqual(result.status, 200);
 
-    const uncompressed = await uncompress(result);
-    assert.strictEqual(uncompressed, expected.trim());
+    const body = await uncompress(result);
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '406',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '456',
+      'content-type': 'application/json; charset=utf-8',
       'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
       'x-source-location': 'https://www.example.com/',
     });
@@ -428,13 +450,13 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '2870',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '3138',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
 
-  it('return 409 for large image', async () => {
+  it('returns 409 for large image', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'image-large.html'), {})
@@ -472,7 +494,7 @@ describe('Index Tests', () => {
     });
   });
 
-  it('return 409 for several large images', async () => {
+  it('returns 409 for several large images', async () => {
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'images-large.html'), {})
@@ -571,14 +593,15 @@ describe('Index Tests', () => {
       },
     );
     const expected = await readFile(resolve(__testdir, 'fixtures', 'image-large.md'), 'utf-8');
-    const uncompressed = await uncompress(result);
+    const body = await uncompress(result);
     assert.strictEqual(result.status, 200);
-    assert.strictEqual(uncompressed, expected.trim());
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '345',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '382',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
@@ -631,8 +654,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '0',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '26',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
