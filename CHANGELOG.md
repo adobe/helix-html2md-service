@@ -1,3 +1,21 @@
+# [2.21.0](https://github.com/adobe/[secure]-html2md-service/compare/v2.20.4...v2.21.0) (2026-02-17)
+
+
+### Bug Fixes
+
+* post-deploy test to match the new json response from mediahandler ([4d77c19](https://github.com/adobe/[secure]-html2md-service/commit/4d77c19c4a2646ad3b65b49182a280ba4b4ab35f))
+* remove optionality ([884bdab](https://github.com/adobe/[secure]-html2md-service/commit/884bdab7f19105aeb1ae26b8a0b5cdf4fc47dfb9))
+* reverting tests for large images to be 409 ([38f5d48](https://github.com/adobe/[secure]-html2md-service/commit/38f5d487b144ef5ee04b4f342a6a6a657da9bfcf))
+* switch md to markdown ([368087f](https://github.com/adobe/[secure]-html2md-service/commit/368087ffe460f21563072079d09dd2d9e0592fe8))
+* test the entire json response properly ([c22654b](https://github.com/adobe/[secure]-html2md-service/commit/c22654b1c2a41803fbcae7deeda13875e8fedd48))
+* tighter assertions in the test in the same format as before ([0b2700e](https://github.com/adobe/[secure]-html2md-service/commit/0b2700e619138d9077d299fa4e23b7c5ba67fd42))
+* update maxImageSize limit test ([#900](https://github.com/adobe/[secure]-html2md-service/issues/900)) ([df90f9a](https://github.com/adobe/[secure]-html2md-service/commit/df90f9a826d2a1cca8c80cf80b4595b140019d28))
+
+
+### Features
+
+* new json response format with media list in addition to md ([ee9ed68](https://github.com/adobe/[secure]-html2md-service/commit/ee9ed68bf7d37569adc9e258b24204e9c6b70106))
+
 ## [2.20.4](https://github.com/adobe/[secure]-html2md-service/compare/v2.20.3...v2.20.4) (2026-02-17)
 
 
