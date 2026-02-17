@@ -538,26 +538,26 @@ describe('Index Tests', () => {
   });
 
   it('honors maxImageSize limit', async () => {
+    const blobKey = '/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3';
     nock('https://my-media-bus.s3.us-east-1.amazonaws.com')
-      .head('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3')
+      .head(blobKey)
       .reply(404)
-      .put(/\/foo-id\/120b6669c77e35fb2ad9563a4a048701b43948bd3\?partNumber=[12345]&x-id=UploadPart/)
+      .post(blobKey)
+      .query({ uploads: '' })
+      .reply(200, `<?xml version="1.0" encoding="UTF-8"?>
+        <InitiateMultipartUploadResult>
+          <UploadId>test-upload-id</UploadId>
+        </InitiateMultipartUploadResult>`)
+      .put(blobKey)
+      .query(true)
       .times(5)
-      .reply(201, '', {
-        etag: '1234',
-      })
-      .post('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3')
-      .reply(() => {
-        const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<CompleteMultipartUploadResult>
-   <Location>s3://my-media-bus.s3.us-east-1.amazonaws.com/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3</Location>
-   <Bucket>my-media-bus</Bucket>
-   <Key>foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3</Key>
-</CompleteMultipartUploadResult>`;
-        return [200, xml];
-      })
-      .post('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3?uploads=')
-      .reply(201);
+      .reply(200, '', { ETag: '"test-etag"' })
+      .post(blobKey)
+      .query(true)
+      .reply(200, `<?xml version="1.0" encoding="UTF-8"?>
+        <CompleteMultipartUploadResult>
+          <Location>https://my-media-bus.s3.us-east-1.amazonaws.com${blobKey}</Location>
+        </CompleteMultipartUploadResult>`);
 
     nock('https://www.example.com')
       .get('/')
@@ -565,7 +565,7 @@ describe('Index Tests', () => {
       .get('/large.png')
       .reply(200, Buffer.alloc(25 * 1024 * 1024), {
         'content-type': 'image/png',
-        'content-length': 25 * 1024 * 1240,
+        'content-length': 25 * 1024 * 1024,
       });
 
     const result = await main(
@@ -596,11 +596,20 @@ describe('Index Tests', () => {
     const body = await uncompress(result);
     assert.strictEqual(result.status, 200);
     assert.strictEqual(body.markdown.trim(), expected.trim());
-    assert.deepStrictEqual(body.media, []);
+    assert.deepStrictEqual(body.media, [
+      {
+        uri: 'https://main--repo--owner.aem.page/media_120b6669c77e35fb2ad9563a4a048701b43948bd3.png#width=0&height=0',
+        hash: '120b6669c77e35fb2ad9563a4a048701b43948bd3',
+        contentType: 'image/png',
+        width: '0',
+        height: '0',
+        uploaded: true,
+      },
+    ]);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '382',
+      'content-length': '613',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
