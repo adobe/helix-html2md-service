@@ -38,6 +38,24 @@ const DUMMY_ENV = {
   CLOUDFLARE_R2_SECRET_ACCESS_KEY: 'dummy',
 };
 
+function createRequest(body = {}) {
+  return new Request('https://www.example.com/', {
+    method: 'POST',
+    headers: {
+      authorization: 'Bearer 1234',
+      'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      org: 'owner',
+      site: 'repo',
+      sourceUrl: 'https://www.example.com/',
+      contentBusId: 'foo-id',
+      ...body,
+    }),
+  });
+}
+
 describe('Index Tests', () => {
   let nock;
   beforeEach(() => {
@@ -286,22 +304,10 @@ describe('Index Tests', () => {
       });
     const expected = await readFile(resolve(__testdir, 'fixtures', 'unspread.md'), 'utf-8');
     const result = await main(
-      new Request('https://example.org/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
+      createRequest({
+        features: {
+          unspreadLists: true,
         },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-          features: {
-            unspreadLists: true,
-          },
-        }),
       }),
       {
         log: console,
@@ -402,22 +408,10 @@ describe('Index Tests', () => {
       .reply(200, html);
 
     const result = await main(
-      new Request('https://www.example.com/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
+      createRequest({
+        limits: {
+          maxImages: 250,
         },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-          limits: {
-            maxImages: 250,
-          },
-        }),
       }),
       {
         log: console,
@@ -443,27 +437,11 @@ describe('Index Tests', () => {
         'content-type': 'image/png',
         'content-length': 21 * 1024 * 1240,
       });
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/1f862c09d09f5b668c3de568c98c6c4662d45d680')
+      .reply(404);
 
-    const result = await main(
-      new Request('https://www.example.com/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-        }),
-      }),
-      {
-        log: console,
-        env: DUMMY_ENV,
-      },
-    );
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
     assert.strictEqual(result.status, 409);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
@@ -486,32 +464,110 @@ describe('Index Tests', () => {
         'content-type': 'image/png',
         'content-length': 24 * 1024 * 1240,
       });
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/12ceb58e109d0d8e77fd986bdd8215f4f7a1aafb2')
+      .reply(404)
+      .head('/foo-id/186a5ba15193adc18f983308b64a0b92b4ad941f1')
+      .reply(404);
 
-    const result = await main(
-      new Request('https://www.example.com/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-        }),
-      }),
-      {
-        log: console,
-        env: DUMMY_ENV,
-      },
-    );
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
     assert.strictEqual(result.status, 409);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-type': 'text/plain; charset=utf-8',
       'x-error': 'error fetching resource at https://www.example.com/: Images 1 and 2 exceed allowed limit of 20.00MB',
+    });
+  });
+
+  it('rejects invalid SVG', async () => {
+    const svg = Buffer.from('<xml xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="24" style="stroke:#006600; fill:#00cc00"/></xml>');
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/199c601995c217244407df21d6a1d71b0e83f3ffb')
+      .reply(404);
+
+    nock('https://www.example.com')
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'svg.html'), {})
+      .get('/icon.svg')
+      .reply(200, svg, {
+        'content-type': 'image/svg+xml',
+        'content-length': svg.length,
+      });
+
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
+    assert.strictEqual(result.status, 409);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-error': 'error fetching resource at https://www.example.com/: Image 1 failed validation: Expected XML content with an SVG root item}',
+    });
+  });
+
+  it('accepts valid SVG', async () => {
+    const svg = Buffer.from(`<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="red"/>
+</svg>`);
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/17d55a1d5a57e8fcee802eec435599147fc0935dc')
+      .reply(404)
+      .put('/foo-id/17d55a1d5a57e8fcee802eec435599147fc0935dc?x-id=PutObject')
+      .reply(201);
+
+    nock('https://www.example.com')
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'svg.html'), {})
+      .get('/icon.svg')
+      .reply(200, svg, {
+        'content-type': 'image/svg+xml',
+        'content-length': svg.length,
+      });
+
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
+    assert.strictEqual(result.status, 200);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-encoding': 'gzip',
+      'content-length': '318',
+      'content-type': 'text/markdown; charset=utf-8',
+      'x-source-location': 'https://www.example.com/',
+    });
+  });
+
+  it('rejects invalid SVG, large image and ignores non image', async () => {
+    const svg = Buffer.from('<xml xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="24" style="stroke:#006600; fill:#00cc00"/></xml>');
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/199c601995c217244407df21d6a1d71b0e83f3ffb')
+      .reply(404)
+      .head('/foo-id/186a5ba15193adc18f983308b64a0b92b4ad941f1')
+      .reply(404)
+      .head('/foo-id/1234dea2862775a45dbc9311cff50ae57eba56eba')
+      .reply(404);
+
+    nock('https://www.example.com')
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'svg-mix.html'), {})
+      .get('/icon.svg')
+      .reply(200, svg, {
+        'content-type': 'image/svg+xml',
+        'content-length': svg.length,
+      })
+      .get('/icon.txt')
+      .reply(200, 'hello, world!', {
+        'content-type': 'text/plain; charset=utf-8',
+      })
+      .get('/icon.png')
+      .reply(200, Buffer.alloc(25 * 1025 * 1024), {
+        'content-type': 'image/png',
+        'content-length': 25 * 1024 * 1240,
+      });
+
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
+    assert.strictEqual(result.status, 409);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-error': 'error fetching resource at https://www.example.com/: Images 1 and 3 have failed validation.',
     });
   });
 
@@ -547,23 +603,11 @@ describe('Index Tests', () => {
       });
 
     const result = await main(
-      new Request('https://www.example.com/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
+      createRequest({
+        limits: {
+          maxImageSize: 30 * 1024 * 1024, // 30mb
         },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-          limits: {
-            maxImageSize: 30 * 1024 * 1024, // 30mb
-          },
-          mediaBucket: 'my-media-bus',
-        }),
+        mediaBucket: 'my-media-bus',
       }),
       {
         log: console,
@@ -604,22 +648,10 @@ describe('Index Tests', () => {
       .reply(200, 'x'.repeat(1024 ** 2 + 1));
 
     const result = await main(
-      new Request('https://www.example.com/', {
-        method: 'POST',
-        headers: {
-          authorization: 'Bearer 1234',
-          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
-          'content-type': 'application/json',
+      createRequest({
+        limits: {
+          maxHTMLSize: 2 * 1024 * 1024, // 2mb
         },
-        body: JSON.stringify({
-          org: 'owner',
-          site: 'repo',
-          sourceUrl: 'https://www.example.com/',
-          contentBusId: 'foo-id',
-          limits: {
-            maxHTMLSize: 2 * 1024 * 1024, // 2mb
-          },
-        }),
       }),
       {
         log: console,
