@@ -159,12 +159,13 @@ describe('Index Tests', () => {
             width: '300',
             height: '300',
             uploaded: true,
+            originalUri: 'https://images.dummy.com/300.png',
           },
         ]);
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '1141',
+          'content-length': '1190',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -238,12 +239,13 @@ describe('Index Tests', () => {
             width: '300',
             height: '300',
             uploaded: true,
+            originalUri: 'https://images.dummy.com/300.png',
           },
         ]);
         assert.deepStrictEqual(result.headers.plain(), {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '1141',
+          'content-length': '1190',
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
@@ -444,7 +446,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '3138',
+      'content-length': '3190',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
@@ -550,8 +552,8 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '318',
-      'content-type': 'text/markdown; charset=utf-8',
+      'content-length': '597',
+      'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
   });
@@ -648,12 +650,13 @@ describe('Index Tests', () => {
         width: '0',
         height: '0',
         uploaded: true,
+        originalUri: 'https://www.example.com/large.png',
       },
     ]);
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '613',
+      'content-length': '663',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
