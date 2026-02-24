@@ -15,7 +15,9 @@ import wrap from '@adobe/helix-shared-wrap';
 import { helixStatus } from '@adobe/helix-status';
 import bodyData from '@adobe/helix-shared-body-data';
 import { toSISize } from '@adobe/helix-shared-string';
-import { ConstraintsError, TooManyImagesError, html2md } from '@adobe/helix-html2md';
+import {
+  ConstraintsError, TooManyImagesError, ImageUploadError, html2md,
+} from '@adobe/helix-html2md';
 import {
   Response,
   h1NoCache,
@@ -23,8 +25,9 @@ import {
   AbortError,
 } from '@adobe/fetch';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
-import { MediaHandler, SizeTooLargeException } from '@adobe/helix-mediahandler';
+import { MediaHandler, SizeTooLargeException, maxSizeMediaFilter } from '@adobe/helix-mediahandler';
 import pkgJson from './package.cjs';
+import { validateSVG } from './validate-svg.js';
 
 /* c8 ignore next 7 */
 export const { fetch } = h1NoCache();
@@ -34,6 +37,23 @@ const gzip = promisify(zlib.gzip);
 const DEFAULT_MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20mb
 
 const DEFAULT_MAX_HTML_SIZE = 1024 * 1024; // 1mb
+
+function createUploadErrorMessage(errors) {
+  if (errors.length === 1) {
+    const e = errors[0];
+    if (e.error instanceof SizeTooLargeException) {
+      return `Image ${e.idx} exceeds allowed limit of ${toSISize(e.error.limit)}`;
+    }
+    return `Image ${e.idx} failed validation: ${e.error.message}}`;
+  }
+  const errorImages = errors.map(({ idx }) => idx).sort((a, b) => a - b);
+  // eslint-disable-next-line max-len
+  const stlErrors = errors.map(({ error: err }) => err).filter((e) => e instanceof SizeTooLargeException);
+  if (stlErrors.length === errorImages.length) {
+    return `Images ${errorImages.slice(0, -1).join(', ')} and ${errorImages.at(-1)} exceed allowed limit of ${toSISize(stlErrors[0].limit)}`;
+  }
+  return `Images ${errorImages.slice(0, -1).join(', ')} and ${errorImages.at(-1)} have failed validation.`;
+}
 
 /**
  * Generates an error response
@@ -175,7 +195,33 @@ async function run(request, ctx) {
     signal.clear();
   }
 
-  // only use media handler when loaded via fstab. otherwise images are not processed.
+  const contentFilter = async (blob) => {
+    if (blob.data) {
+      await validateSVG(ctx, blob.data);
+    }
+    return true;
+  };
+
+  const maxSize = ctx.data.limits?.maxImageSize
+    ? parseInt(ctx.data.limits.maxImageSize, 10)
+    : DEFAULT_MAX_IMAGE_SIZE;
+
+  const sizeFilter = maxSizeMediaFilter(maxSize);
+
+  const resourceFilter = async (blob) => {
+    const ct = blob.contentType /* c8 ignore next */ || '';
+    if (!ct.startsWith('image/')) {
+      return false;
+    }
+    // check size (throws is limit exceeded)
+    await sizeFilter(blob);
+    if (ct.startsWith('image/svg+xml')) {
+      // return the content filter for svg
+      return contentFilter;
+    }
+    return true;
+  };
+
   let mediaHandler;
   if (contentBusId) {
     const imgSrc = res.headers.get('x-html2md-img-src')?.split(/\s+/) || [];
@@ -200,14 +246,11 @@ async function run(request, ctx) {
       contentBusId,
       log,
       auth: (src) => (imgSrcPolicy(src) ? auth : undefined),
-      filter: /* c8 ignore next */ (blob) => ((blob.contentType || '').startsWith('image/')),
+      filter: resourceFilter,
       blobAgent: `html2md-${pkgJson.version}`,
       noCache,
       fetchTimeout: 5000, // limit image fetches to 5s
       forceHttp1: true,
-      maxSize: ctx.data.limits?.maxImageSize
-        ? parseInt(ctx.data.limits.maxImageSize, 10)
-        : DEFAULT_MAX_IMAGE_SIZE,
     });
   }
 
@@ -254,8 +297,9 @@ async function run(request, ctx) {
     if (e instanceof ConstraintsError) {
       return error(ctx, `error fetching resource at ${sourceUrl}: ${e.message}`, 400);
     }
-    if (e instanceof SizeTooLargeException) {
-      return error(ctx, `error fetching resource at ${sourceUrl}: ${e.message}`, 409);
+    if (e instanceof ImageUploadError) {
+      const message = createUploadErrorMessage(e.errors);
+      return error(ctx, `error fetching resource at ${sourceUrl}: ${message}`, 409);
     }
     /* c8 ignore next 3 */
     log.debug(e.stack);
