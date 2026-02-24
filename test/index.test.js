@@ -28,7 +28,7 @@ function reqUrl(path = '/', init = {}) {
 }
 
 const DUMMY_ENV = {
-  MEDIAHANDLER_NOCACHHE: true,
+  MEDIAHANDLER_NOCACHE: true,
   AWS_PROFILE: 'dummy',
   AWS_REGION: 'us-easy-1',
   AWS_ACCESS_KEY_ID: 'dummy',
@@ -65,6 +65,7 @@ describe('Index Tests', () => {
       AWS_S3_REGION: 'us-east-1',
       AWS_S3_ACCESS_KEY_ID: 'dummy',
       AWS_S3_SECRET_ACCESS_KEY: 'dummy',
+      MEDIAHANDLER_NOCACHE: 'true',
     });
   });
 
