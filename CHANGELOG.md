@@ -1,3 +1,16 @@
+# [2.22.0](https://github.com/adobe/[secure]-html2md-service/compare/v2.21.0...v2.22.0) (2026-02-24)
+
+
+### Bug Fixes
+
+* tests ([93608b6](https://github.com/adobe/[secure]-html2md-service/commit/93608b68bddd3cb6ee8233b9500791bb3ea059c4))
+* tests ([#908](https://github.com/adobe/[secure]-html2md-service/issues/908)) ([965321b](https://github.com/adobe/[secure]-html2md-service/commit/965321b0a5730af5c6b5a79dfe8ae48dc7a882c6))
+
+
+### Features
+
+* reject invalid svg ([#902](https://github.com/adobe/[secure]-html2md-service/issues/902)) ([8ad0350](https://github.com/adobe/[secure]-html2md-service/commit/8ad0350a778ff22004cfa579fec7b827d8fb817b))
+
 # [2.21.0](https://github.com/adobe/[secure]-html2md-service/compare/v2.20.4...v2.21.0) (2026-02-17)
 
 
