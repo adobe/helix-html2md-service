@@ -48,7 +48,7 @@ function createUploadErrorMessage(errors) {
   }
   const errorImages = errors.map(({ idx }) => idx).sort((a, b) => a - b);
   // eslint-disable-next-line max-len
-  const stlErrors = errors.map(({ error: err }) => err).filter((e) => e instanceof SizeTooLargeException);
+  const stlErrors = errors.map(({ error: err }) => err).filter((e) => e.limit > 0);
   if (stlErrors.length === errorImages.length) {
     return `Images ${errorImages.slice(0, -1).join(', ')} and ${errorImages.at(-1)} exceed allowed limit of ${toSISize(stlErrors[0].limit)}`;
   }
