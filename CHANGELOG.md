@@ -1,3 +1,10 @@
+## [2.22.2](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.1...v2.22.2) (2026-02-25)
+
+
+### Bug Fixes
+
+* increase default limit ([#912](https://github.com/adobe/[secure]-html2md-service/issues/912)) ([eecab5d](https://github.com/adobe/[secure]-html2md-service/commit/eecab5d800a2684cb2441c7374b7c3b4ec67ca90))
+
 ## [2.22.1](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.0...v2.22.1) (2026-02-25)
 
 
