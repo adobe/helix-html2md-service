@@ -15,7 +15,7 @@ import { toSISize } from '@adobe/helix-shared-string';
 /**
  * SVG file size limit.
  */
-const SVG_SIZE_LIMIT = 40 * 1024;
+const SVG_SIZE_LIMIT = 5 * 1024 * 1024; // temporary increase until limit is passed from admin
 
 /**
  * Buffer factor applied to limits to allow for format overhead.
