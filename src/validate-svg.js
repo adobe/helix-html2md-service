@@ -13,20 +13,10 @@ import xml2js from 'xml2js';
 import { toSISize } from '@adobe/helix-shared-string';
 
 /**
- * SVG file size limit.
- */
-const SVG_SIZE_LIMIT = 5 * 1024 * 1024; // temporary increase until limit is passed from admin
-
-/**
  * Buffer factor applied to limits to allow for format overhead.
  * A factor of 1.1 means we allow 10% over the documented limit.
  */
 const LIMIT_BUFFER_FACTOR = 1.1;
-
-function getLimit(ctx, property, def) {
-  const limit = Number.parseInt(ctx.attributes.config?.limits?.preview?.[property], 10);
-  return Number.isNaN(limit) ? def : limit;
-}
 
 /**
  * Error information with code and message.
@@ -38,14 +28,13 @@ export class SVGValidationError extends Error {
 /**
  * Validate SVG. Checks whether neither script tags nor on attributes are contained.
  *
- * @param {AdminContext} ctx context
- * @param {string} resourcePath resource path
+ * @param {UniversalContext} ctx context
  * @param {Buffer} buf buffer
- * @throws {StatusCodeError} if an error occurs
+ * @param {number} limit svg size limit
+ * @throws {SVGValidationError} if an error occurs
  */
-export async function validateSVG(ctx, buf) {
+export async function validateSVG(ctx, buf, limit) {
   const { log } = ctx;
-  const limit = getLimit(ctx, 'maxSVGSize', SVG_SIZE_LIMIT);
   if (buf.byteLength > Math.ceil(limit * LIMIT_BUFFER_FACTOR)) {
     const $2 = toSISize(limit, 0);
     const $3 = toSISize(buf.byteLength, 1);

@@ -35,7 +35,7 @@ describe('Validate SVG Test', () => {
     <script>alert('I can do evil things...');</script>
   </circle>
 </svg>`);
-    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents), new SVGValidationError('Script or event handler detected in SVG at: /svg/circle[0]'));
+    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents, 1000), new SVGValidationError('Script or event handler detected in SVG at: /svg/circle[0]'));
   });
 
   it('validates an SVG that has an onload handler', async () => {
@@ -44,7 +44,7 @@ describe('Validate SVG Test', () => {
   <rect width="100" height="100" fill="red"/>
 </svg>`);
 
-    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents), new SVGValidationError('Script or event handler detected in SVG at: /svg'));
+    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents, 1000), new SVGValidationError('Script or event handler detected in SVG at: /svg'));
   });
 
   it('validates an SVG that has an unexpected character', async () => {
@@ -54,7 +54,7 @@ describe('Validate SVG Test', () => {
       style="enable-background:new 0 0 240 234;" xml:space="preserve">
       <!-- foo ->
   </svg>`);
-    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents), new SVGValidationError('Unable to parse SVG XML'));
+    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents, 1000), new SVGValidationError('Unable to parse SVG XML'));
   });
 
   it('validates an SVG', async () => {
@@ -63,9 +63,6 @@ describe('Validate SVG Test', () => {
   <circle cx="40" cy="40" r="24" style="stroke:#006600; fill:#00cc00"/>
 </svg>`);
 
-    const ctx = DEFAULT_CONTEXT();
-    ctx.attributes.config.limits.preview.maxSVGSize = 10;
-
-    await assert.rejects(validateSVG(ctx, contents), new SVGValidationError('SVG is larger than 10B: 313B'));
+    await assert.rejects(validateSVG(DEFAULT_CONTEXT(), contents, 10), new SVGValidationError('SVG is larger than 10B: 313B'));
   });
 });

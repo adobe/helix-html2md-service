@@ -36,6 +36,8 @@ const gzip = promisify(zlib.gzip);
 
 const DEFAULT_MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20mb
 
+const DEFAULT_MAX_SVG_SIZE = 40 * 1024;
+
 const DEFAULT_MAX_HTML_SIZE = 1024 * 1024; // 1mb
 
 function createUploadErrorMessage(errors) {
@@ -44,7 +46,7 @@ function createUploadErrorMessage(errors) {
     if (e.error instanceof SizeTooLargeException) {
       return `Image ${e.idx} exceeds allowed limit of ${toSISize(e.error.limit)}`;
     }
-    return `Image ${e.idx} failed validation: ${e.error.message}}`;
+    return `Image ${e.idx} failed validation: ${e.error.message}`;
   }
   const errorImages = errors.map(({ idx }) => idx).sort((a, b) => a - b);
   // eslint-disable-next-line max-len
@@ -195,16 +197,20 @@ async function run(request, ctx) {
     signal.clear();
   }
 
-  const contentFilter = async (blob) => {
-    if (blob.data) {
-      await validateSVG(ctx, blob.data);
-    }
-    return true;
-  };
-
   const maxSize = ctx.data.limits?.maxImageSize
     ? parseInt(ctx.data.limits.maxImageSize, 10)
     : DEFAULT_MAX_IMAGE_SIZE;
+
+  const maxSVGSize = ctx.data.limits?.maxSVGSize
+    ? parseInt(ctx.data.limits.maxSVGSize, 10)
+    : DEFAULT_MAX_SVG_SIZE;
+
+  const contentFilter = async (blob) => {
+    if (blob.data) {
+      await validateSVG(ctx, blob.data, maxSVGSize);
+    }
+    return true;
+  };
 
   const sizeFilter = maxSizeMediaFilter(maxSize);
 
