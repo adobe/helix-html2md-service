@@ -1,3 +1,11 @@
+## [2.22.1](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.0...v2.22.1) (2026-02-25)
+
+
+### Bug Fixes
+
+* avoid potential NPE ([#910](https://github.com/adobe/[secure]-html2md-service/issues/910)) ([fd5be63](https://github.com/adobe/[secure]-html2md-service/commit/fd5be63820cf970764e621f80b0428bca963158a))
+* do not rely on instanceof ([#909](https://github.com/adobe/[secure]-html2md-service/issues/909)) ([fc3e804](https://github.com/adobe/[secure]-html2md-service/commit/fc3e804737a4057dff65b651542f61376fe918e2))
+
 # [2.22.0](https://github.com/adobe/[secure]-html2md-service/compare/v2.21.0...v2.22.0) (2026-02-24)
 
 
