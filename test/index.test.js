@@ -504,6 +504,70 @@ describe('Index Tests', () => {
     });
   });
 
+  it('returns 409 for large svg', async () => {
+    nock('https://www.example.com')
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'svg.html'), {})
+      .get('/icon.svg')
+      .reply(200, Buffer.alloc(1024 * 1024), {
+        'content-type': 'image/svg+xml',
+        'content-length': 1024 * 1024,
+      });
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/15c7644179be820f5d8ffff9703acca24d76e2a1e')
+      .reply(404);
+
+    const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
+    assert.strictEqual(result.status, 409);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-type': 'text/plain; charset=utf-8',
+      'x-error': 'error fetching resource at https://www.example.com/: Image 1 failed validation: SVG is larger than 40KB: 1.0MB',
+    });
+  });
+
+  it('honors maxSVGSize limit', async () => {
+    const svg = Buffer.from(`<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="red"/><!-- ${'x'.repeat(1_000_000)} -->
+</svg>`);
+    assert.strictEqual(svg.length, 1000155);
+    nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
+      .head('/foo-id/1e64a18c490e4a547d3b09933b98c018fa0a3195c')
+      .reply(404)
+      .put('/foo-id/1e64a18c490e4a547d3b09933b98c018fa0a3195c?x-id=PutObject')
+      .reply(201);
+
+    nock('https://www.example.com')
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'svg.html'), {})
+      .get('/icon.svg')
+      .reply(200, svg, {
+        'content-type': 'image/svg+xml',
+        'content-length': svg.length,
+      });
+
+    const result = await main(
+      createRequest({
+        limits: {
+          maxSVGSize: 5 * 1024 * 1024,
+        },
+      }),
+      {
+        log: console,
+        env: DUMMY_ENV,
+      },
+    );
+    assert.strictEqual(result.status, 200);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-encoding': 'gzip',
+      'content-length': '597',
+      'content-type': 'application/json; charset=utf-8',
+      'x-source-location': 'https://www.example.com/',
+    });
+  });
+
   it('rejects invalid SVG', async () => {
     const svg = Buffer.from('<xml xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="24" style="stroke:#006600; fill:#00cc00"/></xml>');
     nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
@@ -524,7 +588,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-type': 'text/plain; charset=utf-8',
-      'x-error': 'error fetching resource at https://www.example.com/: Image 1 failed validation: Expected XML content with an SVG root item}',
+      'x-error': 'error fetching resource at https://www.example.com/: Image 1 failed validation: Expected XML content with an SVG root item',
     });
   });
 
