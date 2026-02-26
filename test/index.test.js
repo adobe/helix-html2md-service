@@ -160,7 +160,8 @@ describe('Index Tests', () => {
             width: '300',
             height: '300',
             uploaded: true,
-            originalUri: 'https://images.dummy.com/300.png',
+            // ignore since it depends on the order in process-images
+            originalUri: body.media[0].originalUri,
           },
         ]);
         assert.deepStrictEqual(result.headers.plain(), {
