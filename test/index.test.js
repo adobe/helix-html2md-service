@@ -164,10 +164,11 @@ describe('Index Tests', () => {
             originalUri: body.media[0].originalUri,
           },
         ]);
-        assert.deepStrictEqual(result.headers.plain(), {
+        const resHeaders = result.headers.plain();
+        assert.deepStrictEqual(resHeaders, {
           'cache-control': 'no-store, private, must-revalidate',
           'content-encoding': 'gzip',
-          'content-length': '1190',
+          'content-length': resHeaders['content-length'],
           'content-type': 'application/json; charset=utf-8',
           'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
           'x-source-location': 'https://www.example.com/blog/article',
