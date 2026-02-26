@@ -1,3 +1,10 @@
+## [2.22.3](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.2...v2.22.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* use correct limit from payload ([#913](https://github.com/adobe/[secure]-html2md-service/issues/913)) ([3eb35c5](https://github.com/adobe/[secure]-html2md-service/commit/3eb35c5d567f593d367eef9b585ca4b225987661))
+
 ## [2.22.2](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.1...v2.22.2) (2026-02-25)
 
 
