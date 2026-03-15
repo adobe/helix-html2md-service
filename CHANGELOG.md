@@ -1,3 +1,10 @@
+## [2.22.4](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.3...v2.22.4) (2026-03-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/[secure]-mediahandler to v3.1.0 ([#924](https://github.com/adobe/[secure]-html2md-service/issues/924)) ([02af1c1](https://github.com/adobe/[secure]-html2md-service/commit/02af1c1262aa100566af52b4bbd819c4dac682cd))
+
 ## [2.22.3](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.2...v2.22.3) (2026-02-26)
 
 
