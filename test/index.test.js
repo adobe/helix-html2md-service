@@ -456,16 +456,19 @@ describe('Index Tests', () => {
   });
 
   it('returns 409 for large image', async () => {
+    const size = 21 * 1024 * 1024;
+    const hash = '13bbd992451d38da371304dc2915235eea710c0c7';
+
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'image-large.html'), {})
       .get('/large.png')
-      .reply(200, Buffer.alloc(21 * 1025 * 1024), {
+      .reply(200, Buffer.alloc(size), {
         'content-type': 'image/png',
-        'content-length': 21 * 1024 * 1240,
+        'content-length': size,
       });
     nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
-      .head('/foo-id/1f862c09d09f5b668c3de568c98c6c4662d45d680')
+      .head(`/foo-id/${hash}`)
       .reply(404);
 
     const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
@@ -478,23 +481,26 @@ describe('Index Tests', () => {
   });
 
   it('returns 409 for several large images', async () => {
+    const sizes = [24 * 1024 * 1024, 25 * 1024 * 1024];
+    const hashes = ['1ed5bc62d0131875756fa12d396f3f9cf112c89ea', '120b6669c77e35fb2ad9563a4a048701b43948bd3'];
+
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'images-large.html'), {})
       .get('/large.png')
-      .reply(200, Buffer.alloc(25 * 1025 * 1024), {
+      .reply(200, Buffer.alloc(sizes[0]), {
         'content-type': 'image/png',
-        'content-length': 25 * 1024 * 1240,
+        'content-length': sizes[0],
       })
       .get('/large1.png')
-      .reply(200, Buffer.alloc(24 * 1025 * 1024), {
+      .reply(200, Buffer.alloc(sizes[1]), {
         'content-type': 'image/png',
-        'content-length': 24 * 1024 * 1240,
+        'content-length': sizes[1],
       });
     nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
-      .head('/foo-id/12ceb58e109d0d8e77fd986bdd8215f4f7a1aafb2')
+      .head(`/foo-id/${hashes[0]}`)
       .reply(404)
-      .head('/foo-id/186a5ba15193adc18f983308b64a0b92b4ad941f1')
+      .head(`/foo-id/${hashes[1]}`)
       .reply(404);
 
     const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
@@ -630,9 +636,9 @@ describe('Index Tests', () => {
     nock('https://helix-media-bus.s3.us-east-1.amazonaws.com')
       .head('/foo-id/199c601995c217244407df21d6a1d71b0e83f3ffb')
       .reply(404)
-      .head('/foo-id/186a5ba15193adc18f983308b64a0b92b4ad941f1')
-      .reply(404)
       .head('/foo-id/1234dea2862775a45dbc9311cff50ae57eba56eba')
+      .reply(404)
+      .head('/foo-id/120b6669c77e35fb2ad9563a4a048701b43948bd3')
       .reply(404);
 
     nock('https://www.example.com')
@@ -648,9 +654,9 @@ describe('Index Tests', () => {
         'content-type': 'text/plain; charset=utf-8',
       })
       .get('/icon.png')
-      .reply(200, Buffer.alloc(25 * 1025 * 1024), {
+      .reply(200, Buffer.alloc(25 * 1024 * 1024), {
         'content-type': 'image/png',
-        'content-length': 25 * 1024 * 1240,
+        'content-length': 25 * 1024 * 1024,
       });
 
     const result = await main(createRequest(), { log: console, env: DUMMY_ENV });
@@ -702,7 +708,10 @@ describe('Index Tests', () => {
       }),
       {
         log: console,
-        env: DUMMY_ENV,
+        env: {
+          MEDIAHANDLER_DISABLE_EXPECT_CONTINUE: true,
+          ...DUMMY_ENV,
+        },
       },
     );
     const expected = await readFile(resolve(__testdir, 'fixtures', 'image-large.md'), 'utf-8');
