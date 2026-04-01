@@ -50,7 +50,7 @@
     "@adobe/fetch": "4.2.3",
     "@adobe/helix-html2md": "2.0.0",
     "@adobe/helix-mediahandler": "3.1.0",
-    "@adobe/helix-shared-body-data": "2.2.3",
+    "@adobe/helix-shared-body-data": "2.2.4",
     "@adobe/helix-shared-string": "2.2.0",
     "@adobe/helix-shared-utils": "3.0.2",
     "@adobe/helix-shared-wrap": "2.0.2",
@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@adobe/eslint-config-helix": "3.0.23",
-    "@adobe/helix-deploy": "13.5.4",
+    "@adobe/helix-deploy": "13.5.5",
     "@adobe/helix-html-pipeline": "^6.0.0",
     "@adobe/helix-universal": "5.4.0",
     "@adobe/helix-universal-devserver": "1.1.146",
