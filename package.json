@@ -62,7 +62,7 @@
     "@adobe/helix-deploy": "14.0.0",
     "@adobe/helix-html-pipeline": "^6.0.0",
     "@adobe/helix-universal": "5.4.1",
-    "@adobe/helix-universal-devserver": "1.1.146",
+    "@adobe/helix-universal-devserver": "1.1.147",
     "@adobe/semantic-release-coralogix": "1.1.41",
     "@aws-sdk/lib-storage": "3.1020.0",
     "@eslint/config-helpers": "0.5.3",
