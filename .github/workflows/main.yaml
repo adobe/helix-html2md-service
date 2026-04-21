@@ -46,7 +46,7 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::118435662149:role/helix-gh-deploy-config-service
       - name: Fetch AWS Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        uses: aws-actions/aws-secretsmanager-get-secrets@v3
         with:
           parse-json-secrets: true
           secret-ids: |
@@ -90,7 +90,7 @@ jobs:
           aws-region: us-east-1
           role-to-assume: arn:aws:iam::118435662149:role/helix-gh-deploy-config-service
       - name: Fetch AWS Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v2
+        uses: aws-actions/aws-secretsmanager-get-secrets@v3
         with:
           parse-json-secrets: true
           secret-ids: |
