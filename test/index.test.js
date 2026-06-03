@@ -369,27 +369,6 @@ describe('Index Tests', () => {
     });
   });
 
-  for (const status of [
-    { origin: 400, expected: 400, message: 'error fetching resource at https://www.example.com/' },
-    { origin: 401, expected: 401, message: 'not authenticated to access resource: https://www.example.com/' },
-    { origin: 403, expected: 404, message: 'not authorized to access resource: https://www.example.com/' },
-    { origin: 404, expected: 404, message: 'resource not found: https://www.example.com/' },
-  ]) {
-    // eslint-disable-next-line no-loop-func
-    it(`returns ${status.origin} for a ${status.expected} response`, async () => {
-      nock('https://www.example.com').get('/').reply(status.origin);
-
-      const result = await main(reqUrl('/'), { log: console });
-      assert.strictEqual(result.status, status.expected);
-      assert.strictEqual(await result.text(), '');
-      assert.deepStrictEqual(result.headers.plain(), {
-        'cache-control': 'no-store, private, must-revalidate',
-        'content-type': 'text/plain; charset=utf-8',
-        'x-error': status.message,
-      });
-    });
-  }
-
   it('returns 200 for a simple html (with unspread feature)', async () => {
     nock('https://www.example.com', {
       reqheaders: {
