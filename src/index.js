@@ -16,7 +16,7 @@ import { helixStatus } from '@adobe/helix-status';
 import bodyData from '@adobe/helix-shared-body-data';
 import { toSISize } from '@adobe/helix-shared-string';
 import {
-  ConstraintsError, TooManyImagesError, ImageUploadError, html2md,
+  ConstraintsError, TooManyImagesError, ImageUploadError, html2md, imageFilterFromPrefixes,
 } from '@adobe/helix-html2md';
 import {
   Response,
@@ -119,6 +119,32 @@ export function createImgSrcPolicy(baseUrlStr, imgSrcPolicy) {
   });
 
   return (url) => imgSrcPolicFilters.some((f) => f(url));
+}
+
+/**
+ * Creates an image filter for excluding external and media images from processing.
+ * @param {string[]} ext lists of external image url prefixes to exclude
+ * @param {string} org org
+ * @param {string} site site
+ * @return {(function(*): (boolean|boolean))|*}
+ */
+export function createImageFilter(ext, org, site) {
+  const baseFilter = imageFilterFromPrefixes(ext);
+  const prevSuffix = `--${site}--${org}.aem.page`;
+  const liveSuffix = `--${site}--${org}.aem.live`;
+  return (href) => {
+    try { // check if url is on the same site
+      const { hostname, pathname } = new URL(href);
+      if (hostname.endsWith(prevSuffix) || hostname.endsWith(liveSuffix)) {
+        if (pathname.split('/').pop().startsWith('media_')) {
+          return false;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return baseFilter(href);
+  };
 }
 
 /**
@@ -261,11 +287,6 @@ async function run(request, ctx) {
   });
 
   try {
-    // add the aem.page and aem.live hosts as extern images sources for media bus images.
-    const externalImageUrlPrefixes = ctx.data.features?.externalImageUrlPrefixes || [];
-    externalImageUrlPrefixes.push(`https://main--${site}--${org}.aem.page/media_`);
-    externalImageUrlPrefixes.push(`https://main--${site}--${org}.aem.live/media_`);
-
     const md = await html2md(html, {
       mediaHandler,
       log,
@@ -273,7 +294,7 @@ async function run(request, ctx) {
       org,
       site,
       unspreadLists: !!ctx.data.features?.unspreadLists,
-      externalImageUrlPrefixes,
+      imageFilter: createImageFilter(ctx.data.features?.externalImageUrlPrefixes || [], org, site),
       maxImages: ctx.data.limits?.maxImages,
       maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
