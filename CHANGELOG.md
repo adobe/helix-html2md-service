@@ -1,3 +1,11 @@
+## [2.22.11](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.10...v2.22.11) (2026-06-03)
+
+
+### Bug Fixes
+
+* **deps:** update adobe fixes to v2.2.0 ([#974](https://github.com/adobe/[secure]-html2md-service/issues/974)) ([eceefd8](https://github.com/adobe/[secure]-html2md-service/commit/eceefd882e49bac496b3a8b37dde466b1b0cbc12))
+* do not fetch same site media images ([#973](https://github.com/adobe/[secure]-html2md-service/issues/973)) ([46fce36](https://github.com/adobe/[secure]-html2md-service/commit/46fce36e80fcf42bccd0687d8ba692065ee7c890))
+
 ## [2.22.10](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.9...v2.22.10) (2026-05-26)
 
 
