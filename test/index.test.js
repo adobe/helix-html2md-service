@@ -317,6 +317,58 @@ describe('Index Tests', () => {
     });
   }
 
+  it('respect the explicit and implicit external url prefixes', async () => {
+    nock('https://www.example.com', {
+      reqheaders: {
+        authorization: 'Bearer 1234',
+        'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
+      },
+    })
+      .get('/')
+      .replyWithFile(200, resolve(__testdir, 'fixtures', 'external-images.html'), {
+        'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
+      });
+    const expected = await readFile(resolve(__testdir, 'fixtures', 'external-images.md'), 'utf-8');
+    const result = await main(
+      new Request('https://localhost', {
+        method: 'POST',
+        body: JSON.stringify({
+          org: 'owner',
+          site: 'repo',
+          sourceUrl: 'https://www.example.com/',
+          contentBusId: 'foo-id',
+          features: {
+            externalImageUrlPrefixes: [
+              'https://images.dummy.com/',
+            ],
+          },
+        }),
+        headers: {
+          authorization: 'Bearer 1234',
+          'content-type': 'application/json',
+          'x-content-source-location': '/content/some-path/index?sig=signature&exp=2024-03-03T10:00:00.000Z',
+        },
+      }),
+      {
+        log: console,
+        env: DUMMY_ENV,
+      },
+    );
+    assert.strictEqual(result.status, 200);
+
+    const body = await uncompress(result);
+    assert.strictEqual(body.markdown.trim(), expected.trim());
+    assert.deepStrictEqual(body.media, []);
+    assert.deepStrictEqual(result.headers.plain(), {
+      'cache-control': 'no-store, private, must-revalidate',
+      'content-encoding': 'gzip',
+      'content-length': '346',
+      'content-type': 'application/json; charset=utf-8',
+      'last-modified': 'Sat, 22 Feb 2031 15:28:00 GMT',
+      'x-source-location': 'https://www.example.com/',
+    });
+  });
+
   it('returns 200 for a simple html (with unspread feature)', async () => {
     nock('https://www.example.com', {
       reqheaders: {

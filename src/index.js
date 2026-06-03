@@ -16,7 +16,7 @@ import { helixStatus } from '@adobe/helix-status';
 import bodyData from '@adobe/helix-shared-body-data';
 import { toSISize } from '@adobe/helix-shared-string';
 import {
-  ConstraintsError, TooManyImagesError, ImageUploadError, html2md,
+  ConstraintsError, TooManyImagesError, ImageUploadError, html2md, imageFilterFromPrefixes,
 } from '@adobe/helix-html2md';
 import {
   Response,
@@ -119,6 +119,32 @@ export function createImgSrcPolicy(baseUrlStr, imgSrcPolicy) {
   });
 
   return (url) => imgSrcPolicFilters.some((f) => f(url));
+}
+
+/**
+ * Creates an image filter for excluding external and media images from processing.
+ * @param {string[]} ext lists of external image url prefixes to exclude
+ * @param {string} org org
+ * @param {string} site site
+ * @return {(function(*): (boolean|boolean))|*}
+ */
+export function createImageFilter(ext, org, site) {
+  const baseFilter = imageFilterFromPrefixes(ext);
+  const prevSuffix = `--${site}--${org}.aem.page`;
+  const liveSuffix = `--${site}--${org}.aem.live`;
+  return (href) => {
+    try { // check if url is on the same site
+      const { hostname, pathname } = new URL(href);
+      if (hostname.endsWith(prevSuffix) || hostname.endsWith(liveSuffix)) {
+        if (pathname.split('/').pop().startsWith('media_')) {
+          return false;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return baseFilter(href);
+  };
 }
 
 /**
@@ -228,39 +254,37 @@ async function run(request, ctx) {
     return true;
   };
 
-  let mediaHandler;
-  if (contentBusId) {
-    const imgSrc = res.headers.get('x-html2md-img-src')?.split(/\s+/) || [];
-    if (imgSrc.indexOf('self') < 0) {
-      imgSrc.push('self');
-    }
-    const imgSrcPolicy = createImgSrcPolicy(sourceUrl, imgSrc);
-    const {
-      MEDIAHANDLER_NOCACHE: noCache,
-      MEDIAHANDLER_DISABLE_EXPECT_CONTINUE: disableExpectContinueHeader,
-      CLOUDFLARE_ACCOUNT_ID: r2AccountId,
-      CLOUDFLARE_R2_ACCESS_KEY_ID: r2AccessKeyId,
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: r2SecretAccessKey,
-    } = ctx.env;
-    mediaHandler = new MediaHandler({
-      r2AccountId,
-      r2AccessKeyId,
-      r2SecretAccessKey,
-      bucketId: mediaBucket,
-      owner: org,
-      repo: site,
-      ref: 'main',
-      contentBusId,
-      log,
-      auth: (src) => (imgSrcPolicy(src) ? auth : undefined),
-      filter: resourceFilter,
-      blobAgent: `html2md-${pkgJson.version}`,
-      noCache,
-      fetchTimeout: 5000, // limit image fetches to 5s
-      forceHttp1: true,
-      disableExpectContinueHeader,
-    });
+  const imgSrc = res.headers.get('x-html2md-img-src')?.split(/\s+/) || [];
+  if (imgSrc.indexOf('self') < 0) {
+    imgSrc.push('self');
   }
+  const imgSrcPolicy = createImgSrcPolicy(sourceUrl, imgSrc);
+  const {
+    MEDIAHANDLER_NOCACHE: noCache,
+    MEDIAHANDLER_DISABLE_EXPECT_CONTINUE: disableExpectContinueHeader,
+    CLOUDFLARE_ACCOUNT_ID: r2AccountId,
+    CLOUDFLARE_R2_ACCESS_KEY_ID: r2AccessKeyId,
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY: r2SecretAccessKey,
+  } = ctx.env;
+
+  const mediaHandler = new MediaHandler({
+    r2AccountId,
+    r2AccessKeyId,
+    r2SecretAccessKey,
+    bucketId: mediaBucket,
+    owner: org,
+    repo: site,
+    ref: 'main',
+    contentBusId,
+    log,
+    auth: (src) => (imgSrcPolicy(src) ? auth : undefined),
+    filter: resourceFilter,
+    blobAgent: `html2md-${pkgJson.version}`,
+    noCache,
+    fetchTimeout: 5000, // limit image fetches to 5s
+    forceHttp1: true,
+    disableExpectContinueHeader,
+  });
 
   try {
     const md = await html2md(html, {
@@ -270,7 +294,7 @@ async function run(request, ctx) {
       org,
       site,
       unspreadLists: !!ctx.data.features?.unspreadLists,
-      externalImageUrlPrefixes: ctx.data.features?.externalImageUrlPrefixes,
+      imageFilter: createImageFilter(ctx.data.features?.externalImageUrlPrefixes || [], org, site),
       maxImages: ctx.data.limits?.maxImages,
       maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
