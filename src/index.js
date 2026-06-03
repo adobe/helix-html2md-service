@@ -228,41 +228,44 @@ async function run(request, ctx) {
     return true;
   };
 
-  let mediaHandler;
-  if (contentBusId) {
-    const imgSrc = res.headers.get('x-html2md-img-src')?.split(/\s+/) || [];
-    if (imgSrc.indexOf('self') < 0) {
-      imgSrc.push('self');
-    }
-    const imgSrcPolicy = createImgSrcPolicy(sourceUrl, imgSrc);
-    const {
-      MEDIAHANDLER_NOCACHE: noCache,
-      MEDIAHANDLER_DISABLE_EXPECT_CONTINUE: disableExpectContinueHeader,
-      CLOUDFLARE_ACCOUNT_ID: r2AccountId,
-      CLOUDFLARE_R2_ACCESS_KEY_ID: r2AccessKeyId,
-      CLOUDFLARE_R2_SECRET_ACCESS_KEY: r2SecretAccessKey,
-    } = ctx.env;
-    mediaHandler = new MediaHandler({
-      r2AccountId,
-      r2AccessKeyId,
-      r2SecretAccessKey,
-      bucketId: mediaBucket,
-      owner: org,
-      repo: site,
-      ref: 'main',
-      contentBusId,
-      log,
-      auth: (src) => (imgSrcPolicy(src) ? auth : undefined),
-      filter: resourceFilter,
-      blobAgent: `html2md-${pkgJson.version}`,
-      noCache,
-      fetchTimeout: 5000, // limit image fetches to 5s
-      forceHttp1: true,
-      disableExpectContinueHeader,
-    });
+  const imgSrc = res.headers.get('x-html2md-img-src')?.split(/\s+/) || [];
+  if (imgSrc.indexOf('self') < 0) {
+    imgSrc.push('self');
   }
+  const imgSrcPolicy = createImgSrcPolicy(sourceUrl, imgSrc);
+  const {
+    MEDIAHANDLER_NOCACHE: noCache,
+    MEDIAHANDLER_DISABLE_EXPECT_CONTINUE: disableExpectContinueHeader,
+    CLOUDFLARE_ACCOUNT_ID: r2AccountId,
+    CLOUDFLARE_R2_ACCESS_KEY_ID: r2AccessKeyId,
+    CLOUDFLARE_R2_SECRET_ACCESS_KEY: r2SecretAccessKey,
+  } = ctx.env;
+
+  const mediaHandler = new MediaHandler({
+    r2AccountId,
+    r2AccessKeyId,
+    r2SecretAccessKey,
+    bucketId: mediaBucket,
+    owner: org,
+    repo: site,
+    ref: 'main',
+    contentBusId,
+    log,
+    auth: (src) => (imgSrcPolicy(src) ? auth : undefined),
+    filter: resourceFilter,
+    blobAgent: `html2md-${pkgJson.version}`,
+    noCache,
+    fetchTimeout: 5000, // limit image fetches to 5s
+    forceHttp1: true,
+    disableExpectContinueHeader,
+  });
 
   try {
+    // add the aem.page and aem.live hosts as extern images sources for media bus images.
+    const externalImageUrlPrefixes = ctx.data.features?.externalImageUrlPrefixes || [];
+    externalImageUrlPrefixes.push(`https://main--${site}--${org}.aem.page/media_`);
+    externalImageUrlPrefixes.push(`https://main--${site}--${org}.aem.live/media_`);
+
     const md = await html2md(html, {
       mediaHandler,
       log,
@@ -270,7 +273,7 @@ async function run(request, ctx) {
       org,
       site,
       unspreadLists: !!ctx.data.features?.unspreadLists,
-      externalImageUrlPrefixes: ctx.data.features?.externalImageUrlPrefixes,
+      externalImageUrlPrefixes,
       maxImages: ctx.data.limits?.maxImages,
       maxMetadataSize: ctx.data.limits?.maxMetadataSize,
     });
