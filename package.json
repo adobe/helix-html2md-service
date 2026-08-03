@@ -63,7 +63,7 @@
     "@adobe/helix-universal": "5.4.2",
     "@adobe/helix-universal-devserver": "1.1.149",
     "@adobe/semantic-release-coralogix": "1.1.41",
-    "@aws-sdk/lib-storage": "3.1086.0",
+    "@aws-sdk/lib-storage": "3.1091.0",
     "@eslint/config-helpers": "0.6.0",
     "@semantic-release/changelog": "6.0.3",
     "@semantic-release/exec": "7.1.0",
@@ -73,13 +73,13 @@
     "eslint": "9.4.0",
     "husky": "9.1.7",
     "junit-report-builder": "5.1.2",
-    "lint-staged": "17.0.8",
+    "lint-staged": "17.1.0",
     "mocha": "11.7.6",
     "mocha-multi-reporters": "1.5.1",
     "mocha-suppress-logs": "0.6.0",
     "nock": "14.0.16",
     "nodemon": "3.1.14",
-    "semantic-release": "25.0.7"
+    "semantic-release": "25.0.8"
   },
   "lint-staged": {
     "*.js": "eslint"
