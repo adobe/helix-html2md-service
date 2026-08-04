@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@adobe/eslint-config-helix": "3.0.29",
-    "@adobe/helix-deploy": "14.4.2",
+    "@adobe/helix-deploy": "14.4.3",
     "@adobe/helix-universal": "5.4.2",
     "@adobe/helix-universal-devserver": "1.1.149",
     "@aws-sdk/lib-storage": "3.1091.0",
