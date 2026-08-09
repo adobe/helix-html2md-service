@@ -1,3 +1,10 @@
+## [2.22.17](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.16...v2.22.17) (2026-08-09)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/[secure]-html2md to v2.2.3 ([#1007](https://github.com/adobe/[secure]-html2md-service/issues/1007)) ([75c9a77](https://github.com/adobe/[secure]-html2md-service/commit/75c9a7789c8dcbe1f814dc35ad0236a5563960dc))
+
 ## [2.22.16](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.15...v2.22.16) (2026-08-07)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "@adobe/helix-html2md-service",
-  "version": "2.22.16",
+  "version": "2.22.17",
   "private": true,
   "description": "Helix Html2MD Service",
   "main": "src/index.js",
