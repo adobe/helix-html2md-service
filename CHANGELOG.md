@@ -1,3 +1,10 @@
+## [2.22.18](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.17...v2.22.18) (2026-08-28)
+
+
+### Bug Fixes
+
+* remove unused code ([#1012](https://github.com/adobe/[secure]-html2md-service/issues/1012)) ([2eb0584](https://github.com/adobe/[secure]-html2md-service/commit/2eb0584e4ab11b500a103b7c151f60cf964d12bf))
+
 ## [2.22.17](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.16...v2.22.17) (2026-08-09)
 
 
