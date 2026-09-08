@@ -33,9 +33,6 @@ const DUMMY_ENV = {
   AWS_REGION: 'us-easy-1',
   AWS_ACCESS_KEY_ID: 'dummy',
   AWS_SECRET_ACCESS_KEY: 'dummy',
-  CLOUDFLARE_ACCOUNT_ID: 'dummy',
-  CLOUDFLARE_R2_ACCESS_KEY_ID: 'dummy',
-  CLOUDFLARE_R2_SECRET_ACCESS_KEY: 'dummy',
 };
 
 function createRequest(body = {}) {
@@ -742,15 +739,24 @@ describe('Index Tests', () => {
       .reply(200, `<?xml version="1.0" encoding="UTF-8"?>
         <CompleteMultipartUploadResult>
           <Location>https://my-media-bus.s3.us-east-1.amazonaws.com${blobKey}</Location>
-        </CompleteMultipartUploadResult>`);
+        </CompleteMultipartUploadResult>`)
+      .put(`${blobKey}?x-id=CopyObject`)
+      .reply(200, '<?xml version="1.0" encoding="UTF-8"?><CopyObjectResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><LastModified>2021-05-05T08:37:23.000Z</LastModified><ETag>&quot;f278c0035a9b4398629613a33abe6451&quot;</ETag></CopyObjectResult>');
 
+    const imageBuffer = Buffer.alloc(25 * 1024 * 1024);
     nock('https://www.example.com')
       .get('/')
       .replyWithFile(200, resolve(__testdir, 'fixtures', 'image-large.html'), {})
       .get('/large.png')
-      .reply(200, Buffer.alloc(25 * 1024 * 1024), {
+      .reply(206, imageBuffer.subarray(0, 8192), {
         'content-type': 'image/png',
-        'content-length': 25 * 1024 * 1024,
+        'content-range': `bytes 0-8191/${imageBuffer.length}`,
+        'content-length': 8192,
+      })
+      .get('/large.png')
+      .reply(200, imageBuffer, {
+        'content-type': 'image/png',
+        'content-length': imageBuffer.length,
       });
 
     const result = await main(
