@@ -26,6 +26,8 @@ import {
 } from '@adobe/fetch';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { MediaHandler, SizeTooLargeException, maxSizeMediaFilter } from '@adobe/helix-mediahandler';
+import { Storage } from '@adobe/helix-shared-storage';
+import { createBackendFactory } from '@adobe/helix-shared-storage-s3';
 import pkgJson from './package.cjs';
 import { validateSVG } from './validate-svg.js';
 
@@ -267,11 +269,18 @@ async function run(request, ctx) {
     CLOUDFLARE_R2_SECRET_ACCESS_KEY: r2SecretAccessKey,
   } = ctx.env;
 
+  const storage = new Storage({
+    log,
+    backendFactory: createBackendFactory({
+      r2AccountId,
+      r2SecretAccessKey,
+      r2AccessKeyId,
+      disableR2: !r2AccountId,
+    }),
+  });
+  const storageBucket = storage.bucket(mediaBucket || 'helix-media-bus');
   const mediaHandler = new MediaHandler({
-    r2AccountId,
-    r2AccessKeyId,
-    r2SecretAccessKey,
-    bucketId: mediaBucket,
+    storageBucket,
     owner: org,
     repo: site,
     ref: 'main',
