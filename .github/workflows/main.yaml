@@ -4,6 +4,7 @@ on: [push]
 env:
   CI_BUILD_NUM: ${{ github.run_id }}
   CI_BRANCH: ${{ github.ref_name }}
+  HLX_LAMBDA_ROLE: helix-service-role-s3-rw
 
 permissions:
   id-token: write
