@@ -1,10 +1,13 @@
 name: Build
-on: [push]
-
-env:
-  CI_BUILD_NUM: ${{ github.run_id }}
-  CI_BRANCH: ${{ github.ref_name }}
-  HLX_LAMBDA_ROLE: helix-service-role-s3-rw
+run-name: ${{ inputs.run_id || github.event.head_commit.message || github.workflow }}
+on:
+  workflow_dispatch:
+    inputs:
+      mode:        { type: choice, options: [ci, deploy], default: ci }
+      ref:         { description: Tag or branch to deploy, required: false }
+      account_id:  { description: Target AWS account ID, required: false }
+      lambda_role: { description: Lambda execution role name, required: false }
+      run_id:      { description: Unique marker used as the run name, required: false, type: string }
 
 permissions:
   id-token: write
@@ -13,98 +16,12 @@ permissions:
   pull-requests: write # needed by semantic-release
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-      - run: npm install
-      - run: npm test
-      - uses: codecov/codecov-action@v7
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-  test-deploy:
-    name: Test Deploy
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref != 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v7
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-      - run: npm install
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-region: us-east-1
-          role-to-assume: arn:aws:iam::118435662149:role/helix-gh-deploy-config-service
-      - name: Fetch AWS Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v3
-        with:
-          parse-json-secrets: true
-          secret-ids: |
-            /helix/github-action-secrets
-      # see https://github.com/aws-actions/aws-secretsmanager-get-secrets/issues/11
-      - name: unprefix variables
-        run: |
-          for variable in "${!_HELIX_GITHUB_ACTION_SECRETS_@}"; do
-            echo "${variable#_HELIX_GITHUB_ACTION_SECRETS_}=${!variable}" >> $GITHUB_ENV
-          done
-
-      - name: Branch Deployment
-        run: npm run deploy-ci
-        env:
-          HLX_TEST_HEADERS: ${{ secrets.HLX_TEST_HEADERS }}
-      - name: Post-Deployment Integration Test
-        run: npm run test-postdeploy
-        env:
-          HLX_TEST_HEADERS: ${{ secrets.HLX_TEST_HEADERS }}
-      - name: Semantic Release (Dry Run)
-        run: npm run semantic-release-dry
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v7
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24.x'
-      - run: npm install
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          aws-region: us-east-1
-          role-to-assume: arn:aws:iam::118435662149:role/helix-gh-deploy-config-service
-      - name: Fetch AWS Secrets
-        uses: aws-actions/aws-secretsmanager-get-secrets@v3
-        with:
-          parse-json-secrets: true
-          secret-ids: |
-            /helix/github-action-secrets
-      # see https://github.com/aws-actions/aws-secretsmanager-get-secrets/issues/11
-      - name: unprefix variables
-        run: |
-          for variable in "${!_HELIX_GITHUB_ACTION_SECRETS_@}"; do
-            echo "${variable#_HELIX_GITHUB_ACTION_SECRETS_}=${!variable}" >> $GITHUB_ENV
-          done
-
-      - name: Semantic Release
-        run: npm run semantic-release
-        env:
-          HLX_TEST_HEADERS: ${{ secrets.HLX_TEST_HEADERS }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  ci:
+    uses: adobe/helix-shared/.github/workflows/lambda.yaml@vhs/workflow-template
+    with:
+      mode:        ${{ inputs.mode || 'ci' }}
+      ref:         ${{ inputs.ref }}
+      account-id:  ${{ inputs.account_id }}
+      lambda-role: ${{ inputs.lambda_role || 'helix-service-role-s3-rw' }}
+      lint: false
+    secrets: inherit
