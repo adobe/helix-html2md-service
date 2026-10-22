@@ -1,3 +1,17 @@
+## [2.22.24](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.23...v2.22.24) (2026-10-21)
+
+
+### Bug Fixes
+
+* **deps:** update adobe fixes ([#1039](https://github.com/adobe/[secure]-html2md-service/issues/1039)) ([9764087](https://github.com/adobe/[secure]-html2md-service/commit/9764087cf09f2514e2f1ed3534a4d0a87ba35d34))
+
+## [2.22.23](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.22...v2.22.23) (2026-10-12)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/fetch to v4.3.2 ([#1035](https://github.com/adobe/[secure]-html2md-service/issues/1035)) ([c2cd2b9](https://github.com/adobe/[secure]-html2md-service/commit/c2cd2b9eb8e8c78e43f4304abc956731ff3c00bb))
+
 ## [2.22.22](https://github.com/adobe/[secure]-html2md-service/compare/v2.22.21...v2.22.22) (2026-10-06)
 
 
