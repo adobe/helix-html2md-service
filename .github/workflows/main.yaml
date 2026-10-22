@@ -1,6 +1,7 @@
 name: Build
-run-name: ${{ inputs.run_id || github.event.head_commit.message || github.workflow }}
+run-name: ${{ github.event_name == 'workflow_dispatch' && github.run_id || '' }}
 on:
+  push:
   workflow_dispatch:
     inputs:
       mode:        { type: choice, options: [ci, deploy], default: ci }
@@ -17,7 +18,7 @@ permissions:
 
 jobs:
   ci:
-    uses: adobe/helix-shared/.github/workflows/lambda.yaml@vhs/workflow-template
+    uses: adobe/helix-shared-workflows/.github/workflows/lambda.yaml@v1
     with:
       mode:        ${{ inputs.mode || 'ci' }}
       ref:         ${{ inputs.ref }}
