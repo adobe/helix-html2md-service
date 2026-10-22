@@ -23,7 +23,7 @@
     "name": "helix3/html2md@${version}",
     "testUrl": "/_status_check/healthcheck.json",
     "memory": 1024,
-    "awsRole!important": "arn:aws:iam::118435662149:role/helix-service-role-s3-rw",
+    "awsRole!important": "${env.HLX_LAMBDA_ROLE}",
     "awsAttachAuthorizer": "helix-token-authorizer_v2",
     "fastlyServiceId!important": "",
     "nodeVersion": 22
