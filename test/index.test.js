@@ -500,7 +500,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '3190',
+      'content-length': '3192',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });
@@ -792,7 +792,7 @@ describe('Index Tests', () => {
     assert.deepStrictEqual(result.headers.plain(), {
       'cache-control': 'no-store, private, must-revalidate',
       'content-encoding': 'gzip',
-      'content-length': '663',
+      'content-length': '665',
       'content-type': 'application/json; charset=utf-8',
       'x-source-location': 'https://www.example.com/',
     });

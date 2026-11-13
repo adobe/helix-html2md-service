@@ -48,7 +48,7 @@
   "homepage": "https://github.com/adobe/helix-html2md-service#readme",
   "dependencies": {
     "@adobe/fetch": "4.3.2",
-    "@adobe/helix-html2md": "2.2.4",
+    "@adobe/helix-html2md": "2.2.5",
     "@adobe/helix-mediahandler": "4.1.5",
     "@adobe/helix-shared-body-data": "2.2.8",
     "@adobe/helix-shared-storage": "4.0.1",
