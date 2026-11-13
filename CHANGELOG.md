@@ -1,3 +1,10 @@
+## [2.23.3](https://github.com/adobe/helix-html2md-service/compare/v2.23.2...v2.23.3) (2026-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/helix-html2md to v2.2.5 ([#1048](https://github.com/adobe/helix-html2md-service/issues/1048)) ([6278614](https://github.com/adobe/helix-html2md-service/commit/627861437e6b744a71108d57b79a6b9274162b90))
+
 ## [2.23.2](https://github.com/adobe/helix-html2md-service/compare/v2.23.1...v2.23.2) (2026-10-29)
 
 
