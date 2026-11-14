@@ -61,7 +61,7 @@
     "xml2js": "0.6.2"
   },
   "devDependencies": {
-    "@adobe/eslint-config-helix": "3.0.33",
+    "@adobe/eslint-config-helix": "3.0.34",
     "@adobe/helix-deploy": "14.5.4",
     "@adobe/helix-universal": "5.4.4",
     "@adobe/helix-universal-devserver": "1.1.152",
