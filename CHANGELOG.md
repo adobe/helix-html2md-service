@@ -1,3 +1,10 @@
+## [2.23.5](https://github.com/adobe/helix-html2md-service/compare/v2.23.4...v2.23.5) (2026-11-21)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/helix-shared-string to v2.3.0 ([#1055](https://github.com/adobe/helix-html2md-service/issues/1055)) ([741ed29](https://github.com/adobe/helix-html2md-service/commit/741ed29c96361143f768be2bd2291a1ca9ad56cc))
+
 ## [2.23.4](https://github.com/adobe/helix-html2md-service/compare/v2.23.3...v2.23.4) (2026-11-18)
 
 
