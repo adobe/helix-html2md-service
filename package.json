@@ -49,7 +49,7 @@
   "dependencies": {
     "@adobe/fetch": "4.3.2",
     "@adobe/helix-html2md": "2.2.5",
-    "@adobe/helix-mediahandler": "4.1.6",
+    "@adobe/helix-mediahandler": "4.1.7",
     "@adobe/helix-shared-body-data": "2.2.8",
     "@adobe/helix-shared-storage": "4.0.1",
     "@adobe/helix-shared-storage-s3": "2.0.1",
