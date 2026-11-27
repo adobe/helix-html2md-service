@@ -53,7 +53,7 @@
     "@adobe/helix-shared-body-data": "2.2.8",
     "@adobe/helix-shared-storage": "4.0.1",
     "@adobe/helix-shared-storage-s3": "2.0.1",
-    "@adobe/helix-shared-string": "2.3.0",
+    "@adobe/helix-shared-string": "2.4.0",
     "@adobe/helix-shared-utils": "3.0.2",
     "@adobe/helix-shared-wrap": "2.0.2",
     "@adobe/helix-status": "10.1.5",
